@@ -46,12 +46,4 @@ public class Employee {
 
     @Column(name = "addr")
     private String addr;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rank_no")
-    private EmpRank rank;  // 직급
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dmp_no")
-    private Department department;  // 부서
 }
