@@ -1,4 +1,4 @@
-package org.zerock.chain.domain;
+package org.zerock.chain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FormDataEntity {
+public class FormData {
 
     @EmbeddedId
     private FormDataNo formDataNo;

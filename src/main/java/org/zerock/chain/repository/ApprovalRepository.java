@@ -1,7 +1,7 @@
 package org.zerock.chain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.zerock.chain.domain.ApprovalEntity;
+import org.zerock.chain.model.Approval;
 
-public interface ApprovalRepository extends JpaRepository<ApprovalEntity, Integer> {
+public interface ApprovalRepository extends JpaRepository<Approval, Integer> {
 }

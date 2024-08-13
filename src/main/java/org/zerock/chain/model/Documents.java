@@ -1,4 +1,4 @@
-package org.zerock.chain.domain;
+package org.zerock.chain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DocumentsEntity {
+public class Documents {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

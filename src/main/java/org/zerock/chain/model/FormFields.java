@@ -1,4 +1,4 @@
-package org.zerock.chain.domain;
+package org.zerock.chain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FormFieldsEntity {
+public class FormFields {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

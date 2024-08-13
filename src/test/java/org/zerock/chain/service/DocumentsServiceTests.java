@@ -1,13 +1,12 @@
 package org.zerock.chain.service;
 
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.zerock.chain.domain.DocumentsEntity;
-import org.zerock.chain.domain.FormDataEntity;
-import org.zerock.chain.domain.FormFieldsEntity;
+import org.zerock.chain.model.Documents;
+import org.zerock.chain.model.FormData;
+import org.zerock.chain.model.FormFields;
 import org.zerock.chain.dto.DocumentsDTO;
 import org.zerock.chain.dto.FormFieldsDTO;
 import org.zerock.chain.repository.DocumentsRepository;
@@ -55,7 +54,7 @@ public class DocumentsServiceTests {
 
     @Test
     public void testSaveDocument() {
-        DocumentsEntity document = DocumentsEntity.builder()
+        Documents document = Documents.builder()
                 .docTitle("Test Document")
                 .docStatus("Requested")
                 .reqDate(LocalDate.now())
@@ -80,17 +79,17 @@ public class DocumentsServiceTests {
         int docNo = documentsService.saveDocument(document, formFields, formData);
 
         // Verify the document is saved
-        DocumentsEntity savedDocument = documentsRepository.findById(docNo).orElse(null);
+        Documents savedDocument = documentsRepository.findById(docNo).orElse(null);
         assertNotNull(savedDocument);
         assertEquals("Test Document", savedDocument.getDocTitle());
 
         // Verify the formFields are saved
-        List<FormFieldsEntity> savedFormFields = formFieldsRepository.findAll();
+        List<FormFields> savedFormFields = formFieldsRepository.findAll();
         assertEquals(2, savedFormFields.size());
         assertTrue(savedFormFields.stream().anyMatch(ff -> "fieldName1".equals(ff.getFieldName())));
 
         // Verify the formData is saved
-        List<FormDataEntity> savedFormData = formDataRepository.findAll();
+        List<FormData> savedFormData = formDataRepository.findAll();
         assertEquals(2, savedFormData.size());
         assertTrue(savedFormData.stream().anyMatch(fd -> "Test Data".equals(fd.getFieldValue())));
     }

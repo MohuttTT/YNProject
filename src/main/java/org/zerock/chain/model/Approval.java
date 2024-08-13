@@ -1,4 +1,4 @@
-package org.zerock.chain.domain;
+package org.zerock.chain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @ToString
 @Table(name = "approvals")
-public class ApprovalEntity {
+public class Approval {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,11 +22,11 @@ public class ApprovalEntity {
 
     @ManyToOne
     @JoinColumn(name = "doc_no", referencedColumnName = "doc_no")
-    private DocumentsEntity docNo;
+    private Documents docNo;
 
     @ManyToOne
     @JoinColumn(name = "emp_no", referencedColumnName = "emp_no")
-    private EmployeesEntity empNo;
+    private Employee empNo;
 
     @Column(name = "approval_date")
     private LocalDate approvalDate;  // 결재일 (최종 결재일)

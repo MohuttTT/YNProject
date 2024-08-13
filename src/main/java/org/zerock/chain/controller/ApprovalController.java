@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.zerock.chain.domain.DocumentsEntity;
+import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
 import org.zerock.chain.service.DocumentsService;
 import org.zerock.chain.service.FormDataService;
@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Controller
@@ -124,27 +123,27 @@ public class ApprovalController {
     @PostMapping("/submit")
     public String submitForm(@RequestBody SubmitRequest submitRequest) {
 
-        DocumentsEntity documentsEntity = new DocumentsEntity();
-        documentsEntity.setDocTitle(submitRequest.getDocTitle()); // 제목 설정
-        documentsEntity.setReqDate(LocalDate.now()); // 현재 날짜로 설정
-        documentsEntity.setFormNo(1); // 예시로 고정값 사용
-        documentsEntity.setSenderEmpNo(1); // 예시로 보내는 사원 번호 설정
-        documentsEntity.setReceiverEmpNo(2); // 예시로 받는 사원 번호 설정
-        documentsEntity.setCategory("일반기안서"); // 예시로 고정값 사용
+        Documents documents = new Documents();
+        documents.setDocTitle(submitRequest.getDocTitle()); // 제목 설정
+        documents.setReqDate(LocalDate.now()); // 현재 날짜로 설정
+        documents.setFormNo(1); // 예시로 고정값 사용
+        documents.setSenderEmpNo(1); // 예시로 보내는 사원 번호 설정
+        documents.setReceiverEmpNo(2); // 예시로 받는 사원 번호 설정
+        documents.setCategory("일반기안서"); // 예시로 고정값 사용
 
-        int docNo = documentsService.saveDocument(documentsEntity, submitRequest.getFormFields(), submitRequest.getFormData());
+        int docNo = documentsService.saveDocument(documents, submitRequest.getFormFields(), submitRequest.getFormData());
 
         return "redirect:/approval/main"; // main.html로 리다이렉트
     }
 
     @PostMapping("/create-document")
     @ResponseBody // 이 메서드는 JSON 데이터를 반환하게 함
-    public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody DocumentsEntity documentsEntity) {
+    public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody Documents documents) {
         // 문서 엔티티 생성 및 카테고리 설정
-        documentsEntity.setReqDate(LocalDate.now()); // 현재 날짜를 저장
+        documents.setReqDate(LocalDate.now()); // 현재 날짜를 저장
 
         // 문서 저장 후 문서 번호 반환
-        int savedDocument = documentsService.saveDocument(documentsEntity, null, null); // 문서 저장
+        int savedDocument = documentsService.saveDocument(documents, null, null); // 문서 저장
 
         // 저장된 문서의 번호 반환
         Map<String, Integer> response = new HashMap<>();

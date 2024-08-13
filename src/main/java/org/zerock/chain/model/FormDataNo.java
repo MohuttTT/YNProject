@@ -1,4 +1,4 @@
-package org.zerock.chain.domain;
+package org.zerock.chain.model;
 
 import jakarta.persistence.Embeddable;
 import lombok.Data;
