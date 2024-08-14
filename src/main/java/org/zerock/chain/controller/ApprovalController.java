@@ -70,8 +70,7 @@ public class ApprovalController {
     public String approvalDraftRead() { return "approval/draftRead"; }
 
     @GetMapping("/process")
-    public String approvalProcess(@RequestParam("file") String file,
-                                  @RequestParam("docNo") int docNo,
+    public String approvalProcess(@RequestParam("docNo") int docNo,
                                   @RequestParam("category") String category,
                                   Model model) {
         // 필요에 따라 docNo와 category를 모델에 추가
@@ -81,8 +80,6 @@ public class ApprovalController {
         // 추가적으로 필요하면 문서 정보를 조회하여 모델에 추가
         DocumentsDTO document = documentsService.getDocumentById(docNo);
         model.addAttribute("document", document);
-        // 파일 파라미터를 모델에 추가
-        model.addAttribute("file", file);
         return "approval/process";
     }
 

@@ -32,7 +32,7 @@
 
     <!-- Template Main CSS File -->
     <link th:href="@{/assets/css/style.css}" rel="stylesheet"/>
-<!--    <link th:href="@{/assets/css/wemaked.css}" rel="stylesheet"/>-->
+    <!--    <link th:href="@{/assets/css/wemaked.css}" rel="stylesheet"/>-->
 
 
     <!-- =======================================================
@@ -498,7 +498,8 @@
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item active">Approval</li>
+                <li class="breadcrumb-item"><a href="/approval/main">Approval</a></li>
+                <li class="breadcrumb-item active">Main</li>
             </ol>
         </nav>
     </div>
@@ -514,7 +515,8 @@
 
                             <h5 class="card-title">보낸 문서함</h5>
 
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ExtralargeModal">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#ExtralargeModal">
                                 + 새 결재 요청
                             </button>
                         </div>
@@ -535,7 +537,8 @@
                             <tr th:if="${document.reqDate != null}" th:each="document : ${sentDocuments}">
                                 <td th:text="${document.docNo}"></td>
                                 <td>
-                                    <a th:href="@{/read/{docNo}(docNo=${document.docNo})}" th:text="${document.docTitle}"></a>
+                                    <a th:href="@{/read/{docNo}(docNo=${document.docNo})}"
+                                       th:text="${document.docTitle}"></a>
                                 </td>
                                 <td th:text="${document.senderName}"></td>
                                 <td th:text="${document.docStatus}"></td>
@@ -772,7 +775,173 @@
                 <h5 class="modal-title">결재 양식 선택</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body"><!-- modal-body안에 추가한 스타일 있습니다!-->
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 14px;
+                        color: #333;
+                        margin: 20px;
+                    }
+
+                    /* 테이블 스타일 */
+                    #formContainer table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+
+                    #formContainer table, #formContainer th, #formContainer td {
+                        border: 1px solid #ddd;
+                        padding: 10px;
+                        cursor: default;
+                    }
+
+                    /* 헤더 셀 스타일 */
+                    #formContainer td[colspan="2"], #formContainer td[colspan="3"] {
+                        text-align: center;
+                        font-weight: bold;
+                        background-color: #f2f2f2;
+                    }
+
+                    #formContainer td[colspan="6"] {
+                        text-align: center;
+                        background-color: #f9f9f9;
+                    }
+
+                    /* 내부 테이블 스타일 */
+                    #formContainer table table {
+                        width: 100%;
+                        margin: 0;
+                        border: none;
+                    }
+
+                    #formContainer table table td {
+                        border: 1px solid #ddd;
+                        text-align: center;
+                        background-color: #f2f2f2;
+                    }
+
+                    /* 입력 필드 스타일 */
+                    #formContainer input[type="text"],
+                    #formContainer input[type="date"],
+                    #formContainer input[type="time"],
+                    #formContainer input[type="file"],
+                    #formContainer textarea {
+                        width: 100%;
+                        padding: 8px;
+                        margin-top: 5px;
+                        margin-bottom: 5px;
+                        box-sizing: border-box;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                    }
+
+                    #formContainer textarea {
+                        height: 150px;
+                        resize: none;
+                    }
+
+                    #formContainer input[type="file"] {
+                        padding: 5px;
+                    }
+
+                    /* 라벨 스타일 */
+                    #formContainer td:first-child {
+                        background-color: #f2f2f2;
+                        font-weight: bold;
+                        width: 150px;
+                    }
+
+                    /* 특정 셀 스타일 */
+                    #formContainer td[colspan="6"]:not(:first-child) {
+                        text-align: left;
+                    }
+
+                    #formContainer td[colspan="6"] input[type="file"] {
+                        width: auto;
+                    }
+
+                    /* 날짜, 시간 스타일 */
+                    #formContainer input[type="date"],
+                    #formContainer input[type="time"] {
+                        display: inline-block;
+                        width: auto;
+                    }
+
+                    #formContainer input[type="time"] + input[type="time"] {
+                        margin-left: 10px;
+                    }
+
+                    #approverContainer {
+                        display: flex;
+                        width: 100%;
+                        border: 1px solid #ddd; /* 테두리 */
+                    }
+
+                    /* 개별 셀 스타일 */
+                    #approverContainer > div {
+                        flex: 1; /* 비율을 동일하게 */
+                        padding: 10px; /* 패딩 추가 */
+                        border-left: 1px solid #ddd; /* 왼쪽 테두리 */
+                        background-color: #f2f2f2; /* 배경색 */
+                        text-align: center; /* 텍스트 가운데 정렬 */
+                        box-sizing: border-box; /* 패딩 포함한 박스 크기 계산 */
+                    }
+
+                    /* 첫 번째 셀의 왼쪽 테두리 없애기 */
+                    #approverContainer > div:first-child {
+                        border-left: none;
+                    }
+
+                    /* 타임스탬프 행 스타일 */
+                    #timeStamp {
+                        display: flex;
+                        width: 100%;
+                        border-top: none; /* 위쪽 테두리 없애기 */
+                        border-bottom:1px solid #ddd ;
+                    }
+
+                    #timeStamp > div {
+                        flex: 1;
+                        padding: 10px;
+                        border-left: 1px solid #ddd;
+                        background-color: #ffffff; /* 타임스탬프 행은 흰색 배경 */
+                        text-align: center;
+                        box-sizing: border-box;
+                    }
+
+                    /* 첫 번째 셀의 왼쪽 테두리 없애기 */
+                    #timeStamp > div:first-child {
+                        border-left: none;
+                    }
+
+                    /* 세 번째 행의 스타일 */
+                    #approverContainerNumbers {
+                        display: flex;
+                        width: 100%;
+                        border-top: none; /* 위쪽 테두리 없애기 */
+                    }
+
+                    #approverContainerNumbers > div {
+                        flex: 1;
+                        padding: 10px;
+                        border-left: 1px solid #ddd;
+                        background-color: #ffffff; /* 세 번째 행은 흰색 배경 */
+                        text-align: center;
+                        box-sizing: border-box;
+                    }
+
+                    /* 첫 번째 셀의 왼쪽 테두리 없애기 */
+                    #approverContainerNumbers > div:first-child {
+                        border-left: none;
+                    }
+
+                    /* 전체 표에 대한 테두리 스타일 추가 */
+                    #approverContainer, #approverContainerNumbers {
+                        border-bottom: 1px solid #ddd; /* 전체 표 아래 테두리 */
+                    }
+                </style>
                 <div class="left-pane">
                     <ul id="fileList">
                         <li data-file="../approval/generalApproval">일반기안서</li>
@@ -795,41 +964,88 @@
 </div><!-- Extra Large 크기 모달창 부분 끝-->
 
 <script><!-- 새로 추가한 스크립트입니다! -->
-let selectedCategory = ''; // 선택된 카테고리를 저장하는 변수
-
 document.addEventListener('DOMContentLoaded', () => {
-    const preview = document.getElementById('preview');  // 불러온 html이 들어갈 미리보기 부분
-    const listItems = document.querySelectorAll('.left-pane li'); // 모달창 왼쪽 목록 부분
+    let selectedCategory = ''; // 선택된 카테고리를 저장할 변수
 
-    let selectedFile = '';      // 선택된 파일을 저장하는 변수
+    const fileListItems = document.querySelectorAll("#fileList li");
+    const previewContainer = document.getElementById("preview");
 
-    document.getElementById('fileList').addEventListener('click', (event) => {
-        if (event.target.tagName === 'LI') {
-            selectedCategory = event.target.textContent; // 선택된 양식의 텍스트를 카테고리로 설정
-            document.querySelectorAll('#fileList li').forEach(li => li.classList.remove('selected'));
-            event.target.classList.add('selected');
-        }
-    });
+    fileListItems.forEach(item => {
+        item.addEventListener("click", function () {
+            const selectedFile = item.getAttribute("data-file");
+            selectedCategory = item.textContent.trim(); // 선택된 카테고리 이름을 가져옴
 
+            // 결재 양식에 따른 HTML 내용
+            let formHtml = '';
+            if (selectedFile === "../approval/overTime") {
+                formHtml = `
+                    <div id="formContainer">
+                        <table>
+                            <tr>
+                                <td style="text-align: left; background-color: #FFFFFF;">연장근무신청서</td>
+                                <td colspan="2" style="background-color: #ffffff;"></td>
+                                <td colspan="3" style="text-align: right; padding: 0;">
+                                    <div id="approverContainer" style="display: flex; width: 100%;">
+                                        <!--<div style="flex: 1; background-color: #f2f2f2; text-align: center;">카리나 사원</div>
+                                        <div style="flex: 1; background-color: #f2f2f2; text-align: center;">이사용 사원</div>
+                                        <div style="flex: 1; background-color: #f2f2f2; text-align: center;">박라면 부사장</div>-->
+                                    </div>
+                                    <div id="timeStamp" style="display: flex; width: 100%;">
 
-    // 파일 리스트 클릭 시 선택된 파일 저장
-    document.getElementById('fileList').addEventListener('click', function (e) {
-        if (e.target.tagName === 'LI') {
-            selectedFile = e.target.getAttribute('data-file');
-            // 선택된 파일 강조 표시
-            Array.from(e.target.parentElement.children).forEach(item => item.classList.remove('selected'));
-            e.target.classList.add('selected');
+                                    </div>
+                                    <div id="approverContainerNumbers" style="display: flex; width: 100%;">
+                                        <!--<div style="flex: 1; background-color: #ffffff; text-align: center;">1</div>
+                                        <div style="flex: 1; background-color: #ffffff; text-align: center;">2</div>
+                                        <div style="flex: 1; background-color: #ffffff; text-align: center;">3</div>-->
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color: #f2f2f2; width: 16.67%;">부서</td>
+                                <td style="background-color: #ffffff; width: 16.67%;">업무지원</td>
+                                <td style="background-color: #f2f2f2; width: 16.67%; font-weight: bold;">기안자</td>
+                                <td style="background-color: #ffffff; width: 16.67%;">김희재</td>
+                                <td style="background-color: #f2f2f2; width: 16.67%; font-weight: bold;">직급</td>
+                                <td style="background-color: #ffffff; width: 16.67%;">부장</td>
+                            </tr>
+                            <tr>
+                                <td>작성일</td>
+                                <td colspan="5">2023-08-22</td>
+                            </tr>
+                            <tr>
+                                <td>근무일시</td>
+                                <td colspan="5">
+                                    <input type="date" placeholder="연도-월-일" readonly disabled>
+                                    <input type="time" readonly disabled>
+                                    ~
+                                    <input type="time" readonly disabled>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>제목</td>
+                                <td colspan="5"><input type="text" readonly disabled></td>
+                            </tr>
+                            <tr>
+                                <td>내용</td>
+                                <td colspan="5"><textarea readonly disabled></textarea></td>
+                            </tr>
+                            <tr>
+                                <td>첨부파일</td>
+                                <td colspan="5"><input type="file" disabled></td>
+                            </tr>
+                        </table>
+                    </div>`;
+            } else if (selectedFile === "../approval/generalApproval") {
+                formHtml = `<div>일반기안서 양식이 여기 표시됩니다.</div>`;
+                // 실제 양식을 여기에 작성
+            } else if (selectedFile === "../approval/expense") {
+                formHtml = `<div>지출결의서 양식이 여기 표시됩니다.</div>`;
+                // 실제 양식을 여기에 작성
+            }
 
-            // 선택된 파일의 내용을 미리보기
-            fetch(selectedFile)
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('preview').innerHTML = data;
-                })
-                .catch(error => {
-                    console.error('Preview fetch error:', error);
-                });
-        }
+            // 선택한 양식의 HTML을 preview 컨테이너에 삽입
+            previewContainer.innerHTML = formHtml;
+        });
     });
 
     // "작성" 버튼 클릭 시 결재 진행 페이지로 이동
@@ -839,48 +1055,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 문서 번호와 카테고리 정보를 먼저 서버에 저장하고, 그 후에 파일 파라미터와 함께 이동
+        // 서버에 문서 생성 요청
         fetch('/approval/create-document', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                category: selectedCategory
+                category: selectedCategory // 필요한 다른 필드도 추가 가능
             }),
         })
             .then(response => response.json())
             .then(data => {
-                const docNo = data.docNo;
-                if (docNo) {
-                    // file 파라미터가 있는 경우 URL에 포함
-                    const fileParam = selectedFile ? `&file=${encodeURIComponent(selectedFile)}` : '';
-                    // process.html로 문서 번호와 선택된 카테고리, 파일 경로를 전달
-                    window.location.href = `/approval/process?docNo=${docNo}&category=${encodeURIComponent(selectedCategory)}${fileParam}`;
-                } else {
-                    alert('문서 번호를 받아올 수 없습니다.');
-                }
+                const docNo = data.docNo; // 서버로부터 받은 문서 번호
+
+                // 선택된 HTML 양식 데이터를 sessionStorage에 저장
+                sessionStorage.setItem('selectedFormHtml', previewContainer.innerHTML);
+
+                // 선택한 카테고리 정보를 URL에 포함하여 페이지 이동
+                window.location.href = `/approval/process?docNo=${docNo}&category=${encodeURIComponent(selectedCategory)}`;
             })
-            .catch(error => console.error('Error:', error));
-    });
-
-    // 모달창 미리보기 기능
-    listItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const file = item.getAttribute('data-file');
-            fetch(file)
-                .then(response => response.text())
-                .then(data => {
-                    preview.innerHTML = data;
-
-                    //불러온 콘텐츠 입력 비활성화
-                    disableContent(preview);
-                })
-                .catch(error => {
-                    console.error('Error fetching file:', error);
-                    preview.innerHTML = '<p>파일을 불러오는 데 오류가 발생했습니다.</p>';
-                });
-        });
+            .catch(error => console.error('Error:', error)); // 오류 처리 추가
     });
 
     // 모달 창 닫기 버튼 클릭 시 모달 닫기
@@ -895,6 +1090,7 @@ function disableContent(container) {
         element.style.pointerEvents = 'none';
     });
 }
+
 
 </script>
 
