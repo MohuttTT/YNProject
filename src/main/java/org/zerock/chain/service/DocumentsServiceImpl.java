@@ -13,6 +13,7 @@ import org.zerock.chain.model.FormFields;
 import org.zerock.chain.dto.DocumentsDTO;
 import org.zerock.chain.dto.FormFieldsDTO;
 import org.zerock.chain.repository.DocumentsRepository;
+import org.zerock.chain.repository.EmployeesRepository;
 import org.zerock.chain.repository.FormDataRepository;
 import org.zerock.chain.repository.FormFieldsRepository;
 
@@ -32,6 +33,8 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     private FormFieldsRepository formFieldsRepository;
     @Autowired
     private FormDataRepository formDataRepository;
+    @Autowired
+    private EmployeesRepository employeesRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -71,8 +74,17 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     public List<DocumentsDTO> getSentDocuments(Integer senderEmpNo) {
         // 보낸 문서 목록을 조회하여 DTO로 변환
         List<Documents> documents = documentsRepository.findSentDocuments(senderEmpNo);
+
         return documents.stream()
-                .map(doc -> modelMapper.map(doc, DocumentsDTO.class))
+                .map(doc -> {
+                    DocumentsDTO dto = modelMapper.map(doc, DocumentsDTO.class);
+
+                    // senderName을 employees 테이블에서 조회하여 설정
+                    String senderName = employeesRepository.findFullNameByEmpNo(doc.getSenderEmpNo());
+                    dto.setSenderName(senderName);
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

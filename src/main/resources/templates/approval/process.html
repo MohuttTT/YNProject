@@ -784,7 +784,9 @@
                         </div>
                         <div class="container">
                             <div class="left-container">
+                                <form id="approvalForm" action="/submitForm" method="post">
 
+                                </form>
                             </div>
 
                             <div class="right-container">
@@ -814,7 +816,7 @@
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end"><!-- 버튼의 오른쪽 정렬 -->
                             <button id="backBtn" class="btn btn-secondary">돌아가기</button>
                             <button id="draftBtn" class="btn btn-primary">임시저장</button>
-                            <button id="submitBtn" class="btn btn-success">결재요청</button>
+                            <button type="submit" form="approvalForm" id="submitBtn" class="btn btn-success">결재요청</button>
                         </div>
                     </div>
                 </div>
@@ -938,7 +940,7 @@ function getQueryParam(param) {
 
 document.addEventListener("DOMContentLoaded", function (e) {
     e.stopPropagation();
-    // URL 파라미터에서 docNo, category, file을 가져옴
+    // URL 파라미터에서 docNo, category를 가져옴
     const docNo = getQueryParam('docNo');
     const category = getQueryParam('category');
 
@@ -951,11 +953,18 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
     if (selectedFormHtml) {
         // 왼쪽 컨테이너에 HTML을 삽입
-        const leftContainer = document.querySelector('.left-container');
-        leftContainer.innerHTML = selectedFormHtml;
+        const approvalForm = document.querySelector('#approvalForm');
+        approvalForm.innerHTML = selectedFormHtml;
 
         // sessionStorage에서 HTML 데이터를 삭제 (원하는 경우)
-        sessionStorage.removeItem('selectedFormHtml');
+        /*sessionStorage.removeItem('selectedFormHtml');*/
+
+        // 삽입된 HTML에서 모든 readonly 및 disabled 속성 제거
+        const inputs = approvalForm.querySelectorAll('input[readonly], input[disabled], textarea[readonly], textarea[disabled]');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+        });
 
         // 이제 양식이 DOM에 추가된 후 모달창 관련 설정을 추가
         setupApprovalProcess();
@@ -1181,9 +1190,38 @@ backBtn.addEventListener('click', (e) => {
     window.location.href = '../approval/main';
 });
 
-submitBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    window.location.href = '../approval/main';
+document.getElementById('submitBtn').addEventListener('click', function (e) {
+    e.preventDefault();  // 기본 폼 제출을 막고, AJAX 요청을 사용
+
+    const docNo = getQueryParam('docNo');
+    const docTitle = document.querySelector('input[name="docTitle"]').value;
+
+    // `formContainer`의 HTML을 가져옴
+    const formContainerHtml = document.getElementById('approvalForm').innerHTML;
+
+    // sessionStorage에 저장
+    sessionStorage.setItem('savedFormHtml', formContainerHtml);
+
+    // 서버에 사용자가 입력한 데이터 제출
+    fetch('/approval/submit-form', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            docNo: docNo,  // URL에서 추출한 문서 번호 전달
+            docTitle: docTitle,
+            docStatus: '요청'
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/approval/main';  // 성공적으로 제출되면 메인 페이지로 이동
+            } else {
+                alert('문서 제출에 실패했습니다.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
 });
 
 draftBtn.addEventListener('click', (e) => {

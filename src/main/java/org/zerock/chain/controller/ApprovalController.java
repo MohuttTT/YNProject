@@ -1,11 +1,13 @@
 package org.zerock.chain.controller;
 
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
 import org.zerock.chain.service.DocumentsService;
@@ -26,6 +28,9 @@ public class ApprovalController {
     private final DocumentsService documentsService;
     private final FormDataService formDataService;
     private final FormFieldsService formFieldsService;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     public ApprovalController(DocumentsService documentsService, FormDataService formDataService, FormFieldsService formFieldsService) {
@@ -100,44 +105,51 @@ public class ApprovalController {
 
     // 여기서 부터 document 관련 메서드 입니다!!
     @GetMapping("/read/{docNo}")
-    public String getDocumentDetail(@PathVariable("docNo") int docNo, Model model) {
-        // 문서 번호를 모델에 추가
-        model.addAttribute("docNo", docNo);
+    public String readDocument(@PathVariable("docNo") int docNo,
+                               @RequestParam("category") String category,
+                               Model model) {
+        // 문서 번호로 문서 조회
+        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
 
-        // 문서와 관련된 카테고리 정보를 가져옴
-        String category = documentsService.getCategoryByDocNo(docNo);
+        // 모델에 문서 데이터를 추가
+        model.addAttribute("document", documentDTO);
         model.addAttribute("category", category);
 
-        // 양식 정보를 가져옴
-        List<FormFieldsDTO> formFields = formFieldsService.getFormFieldsByCategory(category);
-        model.addAttribute("formFields", formFields);
-
-        // 카테고리에 따라 템플릿 이름을 결정
-        String templateName = getTemplateNameByCategory(category);
-        return templateName;  // 동적으로 결정된 템플릿 파일의 이름을 반환
+        // 'read.html' 뷰를 반환
+        return "/approval/read";
     }
 
-    @PostMapping("/submit")
-    public String submitForm(@RequestBody SubmitRequest submitRequest) {
+    @PostMapping("/submit-form")
+    public String submitForm(@RequestParam("docNo") int docNo,
+                             @RequestParam("docTitle") String docTitle,
+                             @RequestParam("docStatus") String docStatus,
+                             RedirectAttributes redirectAttributes) {
 
-        Documents documents = new Documents();
-        documents.setDocTitle(submitRequest.getDocTitle()); // 제목 설정
-        documents.setReqDate(LocalDate.now()); // 현재 날짜로 설정
-        documents.setFormNo(1); // 예시로 고정값 사용
-        documents.setSenderEmpNo(1); // 예시로 보내는 사원 번호 설정
-        documents.setReceiverEmpNo(2); // 예시로 받는 사원 번호 설정
-        documents.setCategory("일반기안서"); // 예시로 고정값 사용
+        // 문서 번호로 기존 문서를 조회
+        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
 
-        int docNo = documentsService.saveDocument(documents, submitRequest.getFormFields(), submitRequest.getFormData());
+        // 사용자가 입력한 제목을 설정
+        documentDTO.setDocTitle(docTitle);
+        documentDTO.setDocStatus(docStatus);
+
+        Documents document = modelMapper.map(documentDTO, Documents.class);
+
+        // 변경 사항을 데이터베이스에 저장
+        documentsService.saveDocument(document, null, null);
+
+        // 리다이렉트와 함께 메시지 추가
+        redirectAttributes.addFlashAttribute("message", "문서가 성공적으로 제출되었습니다.");
 
         return "redirect:/approval/main"; // main.html로 리다이렉트
     }
 
     @PostMapping("/create-document")
-    @ResponseBody // 이 메서드는 JSON 데이터를 반환하게 함
     public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody Documents documents) {
         // 문서 엔티티 생성 및 카테고리 설정
         documents.setReqDate(LocalDate.now()); // 현재 날짜를 저장
+        documents.setSenderEmpNo(1); // 임시로 고정된 사원 번호 설정
+        documents.setReceiverEmpNo(2); // 임시로 고정된 수신자 번호 설정
+        documents.setDocStatus("요청"); // 임시로 무조건 등록하면 상태가 요청으로 나오게 설정
 
         // 문서 저장 후 문서 번호 반환
         int savedDocument = documentsService.saveDocument(documents, null, null); // 문서 저장

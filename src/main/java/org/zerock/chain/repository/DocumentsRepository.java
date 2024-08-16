@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface DocumentsRepository extends JpaRepository<Documents, Integer> {
 
-    @Query("SELECT d FROM Documents d WHERE d.senderEmpNo = :senderEmpNo")
+    @Query("SELECT d FROM Documents d WHERE d.senderEmpNo = :senderEmpNo ORDER BY d.docNo DESC")
     List<Documents> findSentDocuments(@Param("senderEmpNo") Integer senderEmpNo);
 
     @Query("SELECT d FROM Documents d WHERE d.receiverEmpNo = :receiverEmpNo")

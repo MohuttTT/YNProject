@@ -65,22 +65,21 @@ public class ApprovalRepositoryTests {
 
     @Test
     public void setupEmployees() {
-        IntStream.rangeClosed(1, 10).forEach(i -> {
-            Employee employee = Employee.builder()
-                    .firstName("First" + i)
-                    .lastName("Last" + i)
-                    .hireDate(LocalDate.now().minusYears(1))
-                    .lastDate(null)
-                    .phoneNum("010-1234-567" + i)
-                    .profileImg("profile" + i + ".png")
-                    .build();
-            employeesRepository.save(employee);
-        });
+        Employee employee = Employee.builder()
+                .empNo(1L)
+                .firstName("나리")
+                .lastName("이")
+                .hireDate(LocalDate.now().minusYears(1))
+                .lastDate(null)
+                .phoneNum("010-1234-5678")
+                .profileImg("profile1.png")
+                .build();
+        employeesRepository.save(employee);
     }
 
     @Test
     public void setupApproval() {
-        IntStream.rangeClosed(1, 10).forEach(i -> {
+        IntStream.rangeClosed(1, 5).forEach(i -> {
             Documents document = documentsRepository.findById(i).orElseThrow();
             Employee employee = employeesRepository.findById((long) i).orElseThrow();
 
