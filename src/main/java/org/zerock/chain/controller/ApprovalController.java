@@ -109,10 +109,10 @@ public class ApprovalController {
                                @RequestParam("category") String category,
                                Model model) {
         // 문서 번호로 문서 조회
-        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
+        DocumentsDTO document = documentsService.getDocumentById(docNo);
 
         // 모델에 문서 데이터를 추가
-        model.addAttribute("document", documentDTO);
+        model.addAttribute("document", document);
         model.addAttribute("category", category);
 
         // 'read.html' 뷰를 반환
