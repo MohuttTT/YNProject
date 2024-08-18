@@ -3,6 +3,7 @@ package org.zerock.chain.controller;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,9 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
+import org.zerock.chain.model.Form;
 import org.zerock.chain.service.DocumentsService;
-import org.zerock.chain.service.FormDataService;
-import org.zerock.chain.service.FormFieldsService;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,17 +26,13 @@ import java.util.Map;
 public class ApprovalController {
 
     private final DocumentsService documentsService;
-    private final FormDataService formDataService;
-    private final FormFieldsService formFieldsService;
 
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
-    public ApprovalController(DocumentsService documentsService, FormDataService formDataService, FormFieldsService formFieldsService) {
+    public ApprovalController(DocumentsService documentsService) {
         this.documentsService = documentsService;
-        this.formDataService = formDataService;
-        this.formFieldsService = formFieldsService;
     }
 
     @GetMapping("/main")                                         // 보낸 문서함 페이지로 이동
@@ -66,13 +62,19 @@ public class ApprovalController {
     }
 
     @GetMapping("/adminRequest")
-    public String approvalAdminRequest() { return "approval/adminRequest"; }
+    public String approvalAdminRequest() {
+        return "approval/adminRequest";
+    }
 
     @GetMapping("/completedRead")
-    public String approvalCompletedRead() { return "approval/completedRead"; }
+    public String approvalCompletedRead() {
+        return "approval/completedRead";
+    }
 
     @GetMapping("/draftRead")
-    public String approvalDraftRead() { return "approval/draftRead"; }
+    public String approvalDraftRead() {
+        return "approval/draftRead";
+    }
 
     @GetMapping("/process")
     public String approvalProcess(@RequestParam("docNo") int docNo,
@@ -89,21 +91,83 @@ public class ApprovalController {
     }
 
     @GetMapping("/read")
-    public String approvalRead() { return "approval/read"; }
+    public String approvalRead() {
+        return "approval/read";
+    }
 
     @GetMapping("/rejectionRead")
-    public String approvalRejectionRead() { return "approval/rejectionRead"; }
+    public String approvalRejectionRead() {
+        return "approval/rejectionRead";
+    }
 
     @GetMapping("/generalApproval")
-    public String approvalGeneralApproval() { return "approval/generalApproval"; }
+    public String approvalGeneralApproval() {
+        return "approval/generalApproval";
+    }
 
     @GetMapping("/expense")
-    public String approvalExpense() { return "approval/expense"; }
+    public String approvalExpense() {
+        return "approval/expense";
+    }
 
     @GetMapping("/overTime")
-    public String approvalOverTime() { return "approval/overTime"; }
+    public String approvalOverTime() {
+        return "approval/overTime";
+    }
 
     // 여기서 부터 document 관련 메서드 입니다!!
+    @PostMapping("/create-document")
+    public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody RequestDTO requestDTO) {
+        // 저장된 문서의 번호 반환
+        Map<String, Integer> response = new HashMap<>();
+        try {
+            // 요청 데이터 출력
+            log.info("RequestDTO: {}", requestDTO);
+
+            // 문서와 양식 저장 후 문서 번호 반환
+            int docNo = documentsService.saveDocument(requestDTO);
+            if (docNo == -1) {
+                throw new RuntimeException("Document save failed in service");
+            }
+            log.info("Generated docNo: {}", docNo); // docNo를 로그로 출력
+
+            response.put("docNo", docNo);
+            log.info("Response: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // 예외 발생 시 에러 로그 출력
+            log.error("Error occurred while creating document", e);
+            // 예외 발생 시 클라이언트에게 적절한 오류 응답 반환
+            response.put("error", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /*@PostMapping("/submit-form")
+    public String submitForm(@RequestParam("docNo") int docNo,
+                             @RequestParam("docTitle") String docTitle,
+                             @RequestParam("docStatus") String docStatus,
+                             @RequestParam("formHtml") String formHtml,
+                             RedirectAttributes redirectAttributes) {
+
+        // 문서 번호로 기존 문서를 조회
+        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
+
+        // 사용자가 입력한 제목을 설정
+        documentDTO.setDocTitle(docTitle);
+        documentDTO.setDocStatus(docStatus);
+
+        Documents document = modelMapper.map(documentDTO, Documents.class);
+
+        // 변경 사항을 데이터베이스에 저장
+        documentsService.saveDocument(document);
+
+        // 리다이렉트와 함께 메시지 추가
+        redirectAttributes.addFlashAttribute("message", "문서가 성공적으로 제출되었습니다.");
+
+        return "redirect:/approval/main"; // main.html로 리다이렉트
+    }*/
+
     @GetMapping("/read/{docNo}")
     public String readDocument(@PathVariable("docNo") int docNo,
                                @RequestParam("category") String category,
@@ -119,58 +183,4 @@ public class ApprovalController {
         return "/approval/read";
     }
 
-    @PostMapping("/submit-form")
-    public String submitForm(@RequestParam("docNo") int docNo,
-                             @RequestParam("docTitle") String docTitle,
-                             @RequestParam("docStatus") String docStatus,
-                             RedirectAttributes redirectAttributes) {
-
-        // 문서 번호로 기존 문서를 조회
-        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
-
-        // 사용자가 입력한 제목을 설정
-        documentDTO.setDocTitle(docTitle);
-        documentDTO.setDocStatus(docStatus);
-
-        Documents document = modelMapper.map(documentDTO, Documents.class);
-
-        // 변경 사항을 데이터베이스에 저장
-        documentsService.saveDocument(document, null, null);
-
-        // 리다이렉트와 함께 메시지 추가
-        redirectAttributes.addFlashAttribute("message", "문서가 성공적으로 제출되었습니다.");
-
-        return "redirect:/approval/main"; // main.html로 리다이렉트
-    }
-
-    @PostMapping("/create-document")
-    public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody Documents documents) {
-        // 문서 엔티티 생성 및 카테고리 설정
-        documents.setReqDate(LocalDate.now()); // 현재 날짜를 저장
-        documents.setSenderEmpNo(1); // 임시로 고정된 사원 번호 설정
-        documents.setReceiverEmpNo(2); // 임시로 고정된 수신자 번호 설정
-        documents.setDocStatus("요청"); // 임시로 무조건 등록하면 상태가 요청으로 나오게 설정
-
-        // 문서 저장 후 문서 번호 반환
-        int savedDocument = documentsService.saveDocument(documents, null, null); // 문서 저장
-
-        // 저장된 문서의 번호 반환
-        Map<String, Integer> response = new HashMap<>();
-        response.put("docNo", savedDocument);
-        return ResponseEntity.ok(response);
-    }
-
-    // category에 기반하여 템플릿 이름을 결정하는 로직
-    private String getTemplateNameByCategory(String category) {
-        switch (category) {
-            case "일반기안서":
-                return "generalApproval.html";   // 일반 기안
-            case "지출결의서":
-                return "expense.html";           // 지출결의서
-            case "연장근무신청서":
-                return "overTime.html";          // 연장근무 신청서
-            default:
-                return "default";  // 기본 템플릿
-        }
-    }
 }

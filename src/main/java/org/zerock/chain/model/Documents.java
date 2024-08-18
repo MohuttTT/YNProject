@@ -19,9 +19,6 @@ public class Documents {
     @Column(name = "doc_no")
     private Integer docNo;
 
-    @Column(name = "form_no")
-    private Integer formNo;  // 양식 번호
-
     @Column(name = "sender_emp_no")
     private Integer senderEmpNo;
 
@@ -55,7 +52,6 @@ public class Documents {
                 ", reqDate=" + reqDate +
                 ", senderEmpNo=" + senderEmpNo +
                 ", receiverEmpNo=" + receiverEmpNo +
-                ", formNo='" + formNo + '\'' +
                 ", category='" + category + '\'' +
                 '}';
     }

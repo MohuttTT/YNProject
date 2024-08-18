@@ -27,12 +27,6 @@ public class ApprovalRepositoryTests {
     @Autowired
     private EmployeesRepository employeesRepository;
 
-    @Autowired
-    private FormDataRepository formDataRepository;
-
-    @Autowired
-    private FormFieldsRepository formFieldsRepository;
-
     @Test
     public void setupDraftDocuments() {
         IntStream.rangeClosed(1, 5).forEach(i -> {
@@ -57,7 +51,6 @@ public class ApprovalRepositoryTests {
                     .senderEmpNo(1) // 보내는 사원 번호
                     .receiverEmpNo(2) // 받는 사원 번호
                     .category("일반기안")
-                    .formNo(1)
                     .build();
             documentsRepository.save(document);
         });
@@ -95,37 +88,6 @@ public class ApprovalRepositoryTests {
     }
 
     @Test
-    public void setupFormData() {
-        IntStream.rangeClosed(1, 10).forEach(i -> {
-            Documents document = documentsRepository.findById(i).orElseThrow();
-            FormFields formField = formFieldsRepository.findById(i).orElseThrow(); // formFieldsRepository 필요
-
-            FormDataNo formDataNo = new FormDataNo(document.getDocNo(), formField.getFieldNo());
-
-            FormData formData = FormData.builder()
-                    .formDataNo(formDataNo)  // 복합키 설정
-                    .fieldValue("Sample value " + i)
-                    .build();
-            formDataRepository.save(formData);
-        });
-    }
-
-    @Test
-    public void setupFormFields() {
-        IntStream.rangeClosed(1, 10).forEach(i -> {
-            FormFields formField = FormFields.builder()
-                    .formNo(1) // form_no를 Integer로 설정
-                    .fieldNo(i)
-                    .fieldName("입력란 " + i)
-                    .fieldType("text") // 예시로 'text' 사용
-                    .fieldOptions("Option " + i)
-                    .category("일반기안")
-                    .build();
-            formFieldsRepository.save(formField);
-        });
-    }
-
-    @Test
     public void testSave() {
         Documents document = Documents.builder()
                 .docTitle("결재 올려드립니다")
@@ -134,7 +96,6 @@ public class ApprovalRepositoryTests {
                 .senderEmpNo(1)
                 .receiverEmpNo(2)
                 .category("일반기안")
-                .formNo(1)
                 .build();
 
         Documents savedDocument = documentsRepository.save(document);

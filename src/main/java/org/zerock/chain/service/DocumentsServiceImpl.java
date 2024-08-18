@@ -2,23 +2,21 @@ package org.zerock.chain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.coyote.Request;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zerock.chain.dto.RequestDTO;
 import org.zerock.chain.model.Documents;
-import org.zerock.chain.model.FormData;
-import org.zerock.chain.model.FormDataNo;
-import org.zerock.chain.model.FormFields;
 import org.zerock.chain.dto.DocumentsDTO;
-import org.zerock.chain.dto.FormFieldsDTO;
+import org.zerock.chain.model.Form;
 import org.zerock.chain.repository.DocumentsRepository;
 import org.zerock.chain.repository.EmployeesRepository;
-import org.zerock.chain.repository.FormDataRepository;
-import org.zerock.chain.repository.FormFieldsRepository;
+import org.zerock.chain.repository.FormRepository;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,16 +25,10 @@ import java.util.stream.Collectors;
 @Transactional
 public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
 
-    @Autowired
-    private DocumentsRepository documentsRepository;
-    @Autowired
-    private FormFieldsRepository formFieldsRepository;
-    @Autowired
-    private FormDataRepository formDataRepository;
-    @Autowired
-    private EmployeesRepository employeesRepository;
-    @Autowired
-    private ModelMapper modelMapper;
+    private final DocumentsRepository documentsRepository;
+    private final EmployeesRepository employeesRepository;
+    private final FormRepository formRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public DocumentsDTO getDocumentById(int docNo) {
@@ -51,24 +43,6 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
                 .map(doc -> modelMapper.map(doc, DocumentsDTO.class))
                 .toList();
     }
-
-    @Override
-    public int registerDocument(DocumentsDTO documentsDTO) {
-        Documents document = modelMapper.map(documentsDTO, Documents.class);
-        Documents savedDocument = documentsRepository.save(document);
-
-        return savedDocument.getDocNo();
-    }
-
-    /*@PostConstruct // 서비스 테스트 때 3개의 Date중 하나만 인식해서 생긴 오류 때문에 넣은 코드
-    public void configureModelMapper() {
-        TypeMap<DocumentsDTO, DocumentsEntity> typeMap = modelMapper.createTypeMap(DocumentsDTO.class, DocumentsEntity.class);
-        typeMap.addMappings(mapper -> {
-            mapper.map(DocumentsDTO::getReqDate, DocumentsEntity::setReqDate);
-            mapper.map(DocumentsDTO::getReReqDate, DocumentsEntity::setReReqDate);
-            mapper.map(DocumentsDTO::getDraftDate, DocumentsEntity::setDraftDate);
-        });
-    }*/
 
     @Override
     public List<DocumentsDTO> getSentDocuments(Integer senderEmpNo) {
@@ -112,51 +86,38 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     }
 
     @Override
-    public int saveDocument(Documents documents, List<FormFieldsDTO> formFields, Map<Integer, String> formData) {
-        // 문서 저장
-        Documents savedDocument = documentsRepository.save(documents);
-        int docNo = savedDocument.getDocNo();
+    public int saveDocument(RequestDTO requestDTO) {
+        try {
+            // Documents 엔티티를 먼저 생성하고 저장
+            Documents documents = Documents.builder()
+                    .reqDate(LocalDate.now())
+                    .senderEmpNo(1)
+                    .receiverEmpNo(2)
+                    .docStatus("요청")
+                    .category(requestDTO.getCategory())
+                    .build();
 
+            Documents savedDocument = documentsRepository.save(documents);
+            log.info("Saved document: {}", savedDocument);
 
-        // form_fields 저장
-        if (formFields != null) {
-            saveFormFields(formFields);
-        }
+            // Form 엔티티를 생성하고, Documents와 연결
+            Form form = Form.builder()
+                    .docNo(savedDocument.getDocNo()) // 저장된 Documents의 docNo 사용
+                    .formHtml(requestDTO.getFormHtml())
+                    .category(requestDTO.getCategory())
+                    .documents(savedDocument) // 단방향 관계 설정
+                    .build();
+            log.info("Attempting to save form: {}", form);
 
-        // form_data 저장
-        if (formData != null) {
-            saveFormData(docNo, formData);
-        }
+            Form savedForm = formRepository.save(form); // Form 저장
+            log.info("Saved form: {}", savedForm);
 
-        return docNo;
-    }
-
-    // form_fields 데이터를 저장하는 메서드
-    private void saveFormFields(List<FormFieldsDTO> formFields) {
-        for (FormFieldsDTO fieldDTO : formFields) {
-            FormFields formField = new FormFields();
-            formField.setFormNo(fieldDTO.getFormNo());
-            formField.setFieldNo(fieldDTO.getFieldNo());
-            formField.setFieldType(fieldDTO.getFieldType());
-            formField.setFieldOptions(fieldDTO.getFieldOptions());
-            formField.setFieldName(fieldDTO.getFieldName());  // 필드 이름 추가
-
-            formFieldsRepository.save(formField);
-        }
-    }
-
-    // form_data 데이터를 저장하는 메서드
-    private void saveFormData(int docNo, Map<Integer, String> formData) {
-        for (Map.Entry<Integer, String> entry : formData.entrySet()) {
-            Integer fieldNo = entry.getKey();
-            String fieldValue = entry.getValue();
-
-            FormData formDataEntity = new FormData();
-            FormDataNo formDataNo = new FormDataNo(docNo, fieldNo); // 복합키 객체 생성
-            formDataEntity.setFormDataNo(formDataNo); // 복합키 설정
-            formDataEntity.setFieldValue(fieldValue);
-
-            formDataRepository.save(formDataEntity);
+            return savedDocument.getDocNo();
+        } catch (Exception e) {
+            // 예외 발생 시 에러 로그 출력
+            log.error("Error occurred while saving document and form", e);
+            // 서비스 계층에서 예외를 던지지 않고 적절한 기본값을 반환
+            return -1;
         }
     }
 }

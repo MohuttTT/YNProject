@@ -20,9 +20,6 @@ public interface DocumentsRepository extends JpaRepository<Documents, Integer> {
     @Query("SELECT d FROM Documents d WHERE d.docStatus = '임시저장'")
     List<Documents> findDraftDocuments();
 
-    @Query("SELECT d.formNo FROM Documents d WHERE d.docNo = :docNo")
-    Integer findFormNoByDocNo(@Param("docNo") Integer docNo);
-
     @Query("SELECT d.category FROM Documents d WHERE d.docNo = :docNo")
     String findCategoryByDocNo(@Param("docNo") int docNo);
 }
