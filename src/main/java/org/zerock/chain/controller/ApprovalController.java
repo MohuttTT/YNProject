@@ -111,17 +111,21 @@ public class ApprovalController {
 
     // 여기서 부터 document 관련 메서드 입니다!!
     @PostMapping("/create-document")
-    public ResponseEntity<Map<String, Object>> createDocument(@RequestBody DocumentsDTO documentsDTO) {
+    public ResponseEntity<Map<String, Object>> createDocument(@ModelAttribute DocumentsDTO documentsDTO) {
         Map<String, Object> response = new HashMap<>();
-
         // 요청 데이터 출력
         log.info("DocumentsDTO: {}", documentsDTO);
 
-        // 문서 저장 후 문서 번호 반환
-        int docNo = documentsService.saveDocument(documentsDTO);
+        try {
+            // 문서 저장 후 문서 번호 반환
+            int docNo = documentsService.saveDocument(documentsDTO);
 
-        response.put("docNo", docNo);
-        return ResponseEntity.ok(response);
+            response.put("docNo", docNo);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error while saving document: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @GetMapping("/read/{docNo}")

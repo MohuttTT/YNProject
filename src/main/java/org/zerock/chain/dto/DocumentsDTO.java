@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -20,10 +21,13 @@ public class DocumentsDTO {
     private Integer receiverEmpNo;    // 받은 사원 번호
     private String docTitle;      // 문서 제목
     private String docStatus;     // 문서 상태
+    private String docBody;       // 문서 내용
+    private String approvalLine;  // 결재선Div 태그 HTML 부분
+    private MultipartFile file;   // 첨부 파일
+    private String filePath;      // 파일 경로
     private LocalDate reqDate;    // 요청일
     private LocalDate reReqDate;  // 재요청일
     private LocalDate draftDate;  // 임시저장일
     private String senderName;    // 엔티티에 없는 부분 sql로 작업할 것 - 걸재문서를 보낸 사람
-    private String receiverName;  // 엔티티에 없는 부분 sql로 작업할 것 - 결재문서를 받은 사람
     private String category;      // 양식 종류
 }

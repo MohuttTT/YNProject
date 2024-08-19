@@ -32,14 +32,6 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     }
 
     @Override
-    public List<DocumentsDTO> getAllDocuments() {
-        List<Documents> documents = documentsRepository.findAll();
-        return documents.stream()
-                .map(doc -> modelMapper.map(doc, DocumentsDTO.class))
-                .toList();
-    }
-
-    @Override
     public List<DocumentsDTO> getSentDocuments(Integer senderEmpNo) {
         // 보낸 문서 목록을 조회하여 DTO로 변환
         List<Documents> documents = documentsRepository.findSentDocuments(senderEmpNo);
@@ -86,6 +78,9 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
                     .docStatus(documentsDTO.getDocStatus())  // 요청된 상태를 사용
                     .category(documentsDTO.getCategory())    // 클라이언트가 보낸 카테고리 설정
                     .docTitle(documentsDTO.getDocTitle())    // 문서 제목을 설정
+                    .docBody(documentsDTO.getDocBody())
+                    .approvalLine(documentsDTO.getApprovalLine())
+                    .filePath(documentsDTO.getFilePath())
                     .build();
 
             Documents savedDocument = documentsRepository.save(documents);

@@ -43,6 +43,15 @@ public class Documents {
     @Column(name = "category")
     private String category;
 
+    @Column(name = "doc_body", columnDefinition = "longtext")
+    private String docBody;  // 문서 내용
+
+    @Column(name = "approval_line", columnDefinition = "longtext")
+    private String approvalLine;  // 결재선 Div 태그 HTML 부분
+
+    @Column(name = "file_path")
+    private String filePath;  // 파일 경로
+
     @Override
     public String toString() {
         return "DocumentsEntity{" +
@@ -53,6 +62,9 @@ public class Documents {
                 ", senderEmpNo=" + senderEmpNo +
                 ", receiverEmpNo=" + receiverEmpNo +
                 ", category='" + category + '\'' +
+                ", docBody='" + docBody + '\'' +
+                ", approvalLine='" + approvalLine + '\'' +
+                ", filePath='" + filePath + '\'' +
                 '}';
     }
 }

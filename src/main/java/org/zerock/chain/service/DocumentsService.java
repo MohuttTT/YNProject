@@ -3,11 +3,8 @@ package org.zerock.chain.service;
 import org.zerock.chain.dto.DocumentsDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface DocumentsService <T extends DocumentsDTO> {
-
-    List<T> getAllDocuments();
 
     List<T> getSentDocuments(Integer senderEmpNo);  // 보낸 문서 목록 조회
     List<T> getReceivedDocuments(Integer receiverEmpNo);  // 받은 문서 목록 조회
