@@ -763,15 +763,15 @@
 <!-- 여기서부터 메인에서 추가한 부분입니다! -->
 <main id="main" class="main"><!-- 위에 상단바 + 사이드바는 고정이고 여기서부터 메인 내용 바뀌는 그 부분입니다! -->
     <div class="pagetitle">
-    <h1>전자결재 작성</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item"><a href="/approval/main">Approval</a></li>
-        <li class="breadcrumb-item active">Process</li>
-      </ol>
-    </nav>
-  </div>
+        <h1>전자결재 작성</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/approval/main">Approval</a></li>
+                <li class="breadcrumb-item active">Process</li>
+            </ol>
+        </nav>
+    </div>
 
     <section class="section electronic-approval">
         <div class="row">
@@ -909,54 +909,34 @@
 </div>
 
 <script><!-- 추가한 스크립트입니다! -->
-// URL의 쿼리 파라미터를 파싱하는 함수
-function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-}
-
 document.addEventListener("DOMContentLoaded", function (e) {
     e.stopPropagation();
     // 결재선 모달창 설정 부분
     const personSelection = document.getElementById('personSelection');
     const departmentList = document.getElementById('departmentList'); // departmentList의 올바른 참조 확인
+    // 세션 스토리지에서 데이터를 가져옴
+    const formHtml = sessionStorage.getItem('formHtml');
+    const category = sessionStorage.getItem('selectedCategory');
 
-    // URL 파라미터에서 docNo, category를 가져옴
-    const docNo = getQueryParam('docNo');
-    const category = getQueryParam('category');
+    if (formHtml) {
+        // 왼쪽 컨테이너에 HTML을 삽입
+        const approvalForm = document.querySelector('#approvalForm');
+        approvalForm.innerHTML = formHtml;
 
-    // 서버에 docNo와 category를 전송하여 formHtml을 가져옴
-    fetch('/approval/create-document', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            docNo: docNo,
-            category: category
-        }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            const formHtml = data.formHtml; // 서버에서 받은 formHtml
+        // 삽입된 HTML에서 모든 readonly 및 disabled 속성 제거
+        const inputs = approvalForm.querySelectorAll('input[readonly], input[disabled], textarea[readonly], textarea[disabled]');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+        });
 
-            // 왼쪽 컨테이너에 HTML을 삽입
-            const approvalForm = document.querySelector('#approvalForm');
-            approvalForm.innerHTML = formHtml;
+        // 양식이 DOM에 추가된 후 결재선 모달창 관련 설정을 추가
+        setupApprovalProcess();
+    } else {
+        console.error('세션 스토리지에서 formHtml을 가져오지 못했습니다.');
+    }
 
-            // 삽입된 HTML에서 모든 readonly 및 disabled 속성 제거
-            const inputs = approvalForm.querySelectorAll('input[readonly], input[disabled], textarea[readonly], textarea[disabled]');
-            inputs.forEach(input => {
-                input.removeAttribute('readonly');
-                input.removeAttribute('disabled');
-            });
-
-            // 양식이 DOM에 추가된 후 결재선 모달창 관련 설정을 추가
-            setupApprovalProcess();
-        })
-        .catch(error => console.error('Error:', error)); // 오류 처리 추가
-
-    const employees = {
+    const employees = {   // 조직도에 해당하는 부분 임시로 만들기, 나중에 DB에 값들 끌어오는 것으로 변경할 것
         marketing: [
             {name: "박성호", position: "부장", department: "마케팅 부서"},
             {name: "김동현", position: "과장", department: "마케팅 부서"},
@@ -1037,6 +1017,35 @@ document.addEventListener("DOMContentLoaded", function (e) {
             personSelection.appendChild(listItem);
         });
     }
+
+    document.getElementById('approvalForm').addEventListener('submit', function (e) {
+        e.preventDefault();  // 기본 폼 제출을 막고, AJAX 요청을 사용
+
+        const docTitle = document.querySelector('input[name="docTitle"]').value;
+        const approvalLineHtml = document.querySelector('#approverContainer').innerHTML; // 결재선만 저장
+
+        // 서버에 결재 요청 (문서 생성 및 저장)
+        fetch('/approval/create-document', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category: category,           // 세션에서 가져온 카테고리
+                docTitle: docTitle,           // 사용자가 입력한 문서 제목
+                docStatus: '요청'             // 문서 상태: 요청
+            })
+        })
+            .then(response => {
+                if (response.ok) {
+                    sessionStorage.clear();  // 제출 후 세션 스토리지 비우기
+                    window.location.href = '/approval/main';  // 메인 페이지로 이동
+                } else {
+                    alert('문서 제출에 실패했습니다.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
 
     // 버튼 클릭 이벤트 리스너
     document.getElementById('button1').addEventListener('click', function () {
@@ -1169,40 +1178,6 @@ function setupApprovalProcess() {
 backBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     window.location.href = '../approval/main';
-});
-
-document.getElementById('submitBtn').addEventListener('click', function (e) {
-    e.preventDefault();  // 기본 폼 제출을 막고, AJAX 요청을 사용
-
-    const docNo = getQueryParam('docNo');
-    const docTitle = document.querySelector('input[name="docTitle"]').value;
-
-    // `formContainer`의 HTML을 가져옴
-    const formContainerHtml = document.getElementById('approvalForm').innerHTML;
-
-    // sessionStorage에 저장
-    sessionStorage.setItem('savedFormHtml', formContainerHtml);
-
-    // 서버에 사용자가 입력한 데이터 제출
-    fetch('/approval/submit-form', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            docNo: docNo,  // URL에서 추출한 문서 번호 전달
-            docTitle: docTitle,
-            docStatus: '요청'
-        })
-    })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '/approval/main';  // 성공적으로 제출되면 메인 페이지로 이동
-            } else {
-                alert('문서 제출에 실패했습니다.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
 });
 
 draftBtn.addEventListener('click', (e) => {

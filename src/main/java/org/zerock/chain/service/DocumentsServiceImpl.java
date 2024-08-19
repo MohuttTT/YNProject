@@ -2,21 +2,17 @@ package org.zerock.chain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.coyote.Request;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.zerock.chain.dto.RequestDTO;
 import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.DocumentsDTO;
-import org.zerock.chain.model.Form;
 import org.zerock.chain.repository.DocumentsRepository;
 import org.zerock.chain.repository.EmployeesRepository;
-import org.zerock.chain.repository.FormRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +23,6 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
 
     private final DocumentsRepository documentsRepository;
     private final EmployeesRepository employeesRepository;
-    private final FormRepository formRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -81,36 +76,20 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     }
 
     @Override
-    public String getCategoryByDocNo(int docNo) {
-        return documentsRepository.findCategoryByDocNo(docNo);
-    }
-
-    @Override
-    public int saveDocument(RequestDTO requestDTO) {
+    public int saveDocument(DocumentsDTO documentsDTO) {
         try {
             // Documents 엔티티를 먼저 생성하고 저장
             Documents documents = Documents.builder()
                     .reqDate(LocalDate.now())
                     .senderEmpNo(1)
                     .receiverEmpNo(2)
-                    .docStatus("요청")
-                    .category(requestDTO.getCategory())
+                    .docStatus(documentsDTO.getDocStatus())  // 요청된 상태를 사용
+                    .category(documentsDTO.getCategory())    // 클라이언트가 보낸 카테고리 설정
+                    .docTitle(documentsDTO.getDocTitle())    // 문서 제목을 설정
                     .build();
 
             Documents savedDocument = documentsRepository.save(documents);
             log.info("Saved document: {}", savedDocument);
-
-            // Form 엔티티를 생성하고, Documents와 연결
-            Form form = Form.builder()
-                    .docNo(savedDocument.getDocNo()) // 저장된 Documents의 docNo 사용
-                    .formHtml(requestDTO.getFormHtml())
-                    .category(requestDTO.getCategory())
-                    .documents(savedDocument) // 단방향 관계 설정
-                    .build();
-            log.info("Attempting to save form: {}", form);
-
-            Form savedForm = formRepository.save(form); // Form 저장
-            log.info("Saved form: {}", savedForm);
 
             return savedDocument.getDocNo();
         } catch (Exception e) {

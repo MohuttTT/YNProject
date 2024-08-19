@@ -15,43 +15,18 @@ public class FormServiceImpl implements FormService {
     private FormRepository formRepository;
 
     @Override
-    public FormDTO saveForm(FormDTO formDto) {
-        // DTO를 엔티티로 변환
-        Form form = new Form();
-        form.setDocNo(formDto.getDocNo());
-        form.setCategory(formDto.getCategory());
-        form.setFormHtml(formDto.getFormHtml());
-        /*form.setFormData(formDto.getFormData());*/
-
-        // 엔티티 저장
-        Form savedForm = formRepository.save(form);
-
-        // 저장된 엔티티를 다시 DTO로 변환
-        FormDTO savedFormDto = new FormDTO();
-        savedFormDto.setDocNo(savedForm.getDocNo());
-        savedFormDto.setCategory(savedForm.getCategory());
-        savedFormDto.setFormHtml(savedForm.getFormHtml());
-//        savedFormDto.setFormData(savedForm.getFormData());
-
-        return savedFormDto;  // 저장된 DTO 반환
-    }
-
-    @Override
-    public Optional<FormDTO> getFormByDocNo(Integer docNo) {
-        Optional<Form> formOptional = formRepository.findById(docNo);
-        if (formOptional.isPresent()) {
-            Form form = formOptional.get();
-
-            // 엔티티를 DTO로 변환
-            FormDTO formDto = new FormDTO();
-            formDto.setDocNo(form.getDocNo());
-            formDto.setCategory(form.getCategory());
-            formDto.setFormHtml(form.getFormHtml());
-//            formDto.setFormData(form.getFormData());
-
-            return Optional.of(formDto);
+    public FormDTO getFormByCategory(String category) {
+        // category에 해당하는 form을 DB에서 찾아서 반환
+        Form form = formRepository.findById(category).orElse(null);
+        if (form != null) {
+            // Form 엔티티를 FormDTO로 변환하여 반환
+            return FormDTO.builder()
+                    .category(form.getCategory())
+                    .formHtml(form.getFormHtml())
+                    .build();
         } else {
-            return Optional.empty();
+            // 필요에 따라 null 또는 예외 처리
+            return null;
         }
     }
 }

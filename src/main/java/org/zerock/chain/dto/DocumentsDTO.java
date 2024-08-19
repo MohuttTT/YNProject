@@ -26,6 +26,4 @@ public class DocumentsDTO {
     private String senderName;    // 엔티티에 없는 부분 sql로 작업할 것 - 걸재문서를 보낸 사람
     private String receiverName;  // 엔티티에 없는 부분 sql로 작업할 것 - 결재문서를 받은 사람
     private String category;      // 양식 종류
-
-    /*private FormDTO form;  // FormDTO를 추가하여 Documents와 양식(Form)을 연결*/
 }

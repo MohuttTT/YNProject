@@ -13,6 +13,7 @@ import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
 import org.zerock.chain.model.Form;
 import org.zerock.chain.service.DocumentsService;
+import org.zerock.chain.service.FormService;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,13 +27,15 @@ import java.util.Map;
 public class ApprovalController {
 
     private final DocumentsService documentsService;
+    private final FormService formService;  // FormService 주입
 
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
-    public ApprovalController(DocumentsService documentsService) {
+    public ApprovalController(DocumentsService documentsService, FormService formService) {
         this.documentsService = documentsService;
+        this.formService = formService;
     }
 
     @GetMapping("/main")                                         // 보낸 문서함 페이지로 이동
@@ -77,16 +80,7 @@ public class ApprovalController {
     }
 
     @GetMapping("/process")
-    public String approvalProcess(@RequestParam("docNo") int docNo,
-                                  @RequestParam("category") String category,
-                                  Model model) {
-        // 필요에 따라 docNo와 category를 모델에 추가
-        model.addAttribute("docNo", docNo);
-        model.addAttribute("category", category);
-
-        // 추가적으로 필요하면 문서 정보를 조회하여 모델에 추가
-        DocumentsDTO document = documentsService.getDocumentById(docNo);
-        model.addAttribute("document", document);
+    public String approvalProcess(Model model) {
         return "approval/process";
     }
 
@@ -117,56 +111,18 @@ public class ApprovalController {
 
     // 여기서 부터 document 관련 메서드 입니다!!
     @PostMapping("/create-document")
-    public ResponseEntity<Map<String, Integer>> createDocument(@RequestBody RequestDTO requestDTO) {
-        // 저장된 문서의 번호 반환
-        Map<String, Integer> response = new HashMap<>();
-        try {
-            // 요청 데이터 출력
-            log.info("RequestDTO: {}", requestDTO);
+    public ResponseEntity<Map<String, Object>> createDocument(@RequestBody DocumentsDTO documentsDTO) {
+        Map<String, Object> response = new HashMap<>();
 
-            // 문서와 양식 저장 후 문서 번호 반환
-            int docNo = documentsService.saveDocument(requestDTO);
-            if (docNo == -1) {
-                throw new RuntimeException("Document save failed in service");
-            }
-            log.info("Generated docNo: {}", docNo); // docNo를 로그로 출력
+        // 요청 데이터 출력
+        log.info("DocumentsDTO: {}", documentsDTO);
 
-            response.put("docNo", docNo);
-            log.info("Response: {}", response);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            // 예외 발생 시 에러 로그 출력
-            log.error("Error occurred while creating document", e);
-            // 예외 발생 시 클라이언트에게 적절한 오류 응답 반환
-            response.put("error", 500);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        // 문서 저장 후 문서 번호 반환
+        int docNo = documentsService.saveDocument(documentsDTO);
+
+        response.put("docNo", docNo);
+        return ResponseEntity.ok(response);
     }
-
-    /*@PostMapping("/submit-form")
-    public String submitForm(@RequestParam("docNo") int docNo,
-                             @RequestParam("docTitle") String docTitle,
-                             @RequestParam("docStatus") String docStatus,
-                             @RequestParam("formHtml") String formHtml,
-                             RedirectAttributes redirectAttributes) {
-
-        // 문서 번호로 기존 문서를 조회
-        DocumentsDTO documentDTO = documentsService.getDocumentById(docNo);
-
-        // 사용자가 입력한 제목을 설정
-        documentDTO.setDocTitle(docTitle);
-        documentDTO.setDocStatus(docStatus);
-
-        Documents document = modelMapper.map(documentDTO, Documents.class);
-
-        // 변경 사항을 데이터베이스에 저장
-        documentsService.saveDocument(document);
-
-        // 리다이렉트와 함께 메시지 추가
-        redirectAttributes.addFlashAttribute("message", "문서가 성공적으로 제출되었습니다.");
-
-        return "redirect:/approval/main"; // main.html로 리다이렉트
-    }*/
 
     @GetMapping("/read/{docNo}")
     public String readDocument(@PathVariable("docNo") int docNo,
@@ -183,4 +139,17 @@ public class ApprovalController {
         return "/approval/read";
     }
 
+    @GetMapping("/getForm/{category}")
+    public ResponseEntity<FormDTO> getFormByCategory(@PathVariable String category) {
+        log.info("Fetching form HTML for category: {}", category);
+
+        FormDTO formDTO = formService.getFormByCategory(category);
+
+        if (formDTO != null) {
+            return ResponseEntity.ok(formDTO);
+        } else {
+            log.error("Form not found for category: {}", category);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
 }

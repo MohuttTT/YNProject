@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import org.zerock.chain.model.Form;
 
 @Repository
-public interface FormRepository extends JpaRepository<Form, Integer> {
+public interface FormRepository extends JpaRepository<Form, String> {
 }
