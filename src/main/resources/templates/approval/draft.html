@@ -463,9 +463,12 @@
               <tbody>
               <tr th:each="document : ${draftDocuments}">
                 <td th:text="${document.docNo}"></td>
-                <td th:text="${document.docTitle}"></td>
+                <td>
+                  <a th:href="@{/approval/read/{docNo}(docNo=${document.docNo}, category=${document.category})}"
+                     th:text="${document.docTitle}"></a>
+                </td>
                 <td th:text="${document.senderName}"></td>
-                <td th:text="${document.draftDate}"></td>
+                <td th:text="${document.reqDate}"></td>
                 <td th:text="${document.category}"></td>
               </tr>
               <tr>
@@ -583,6 +586,16 @@
   <span class="badge btn-danger badge-number">&nbsp;</span>
 </a>
 <!-- 채팅창 끝-->
+
+<script><!-- 추가한 스크립트 코드 입니다-->
+  document.addEventListener("DOMContentLoaded", function() {
+    const saveStatus = sessionStorage.getItem('saveStatus');
+    if (saveStatus) {
+      alert(saveStatus);  // 임시저장 메시지 표시
+      sessionStorage.removeItem('saveStatus');  // 메시지 표시 후 삭제
+    }
+  });
+</script>
 
 <!-- Vendor JS Files -->
 <script src="/assets/vendor/apexcharts/apexcharts.min.js"></script>

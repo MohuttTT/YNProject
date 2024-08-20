@@ -533,7 +533,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:if="${document.reqDate != null}" th:each="document : ${sentDocuments}">
+                            <tr th:if="${document.docStatus != '임시저장'}" th:each="document : ${sentDocuments}">
                                 <td th:text="${document.docNo}"></td>
                                 <td>
                                     <a th:href="@{/approval/read/{docNo}(docNo=${document.docNo}, category=${document.category})}"

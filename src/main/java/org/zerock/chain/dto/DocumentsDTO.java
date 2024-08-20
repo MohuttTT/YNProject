@@ -24,9 +24,8 @@ public class DocumentsDTO {
     private String approverNoHtml;    // 결재자 순번 HTML 부분
     private MultipartFile file;       // 첨부 파일
     private String filePath;          // 파일 경로
-    private LocalDate reqDate;        // 요청일
+    private LocalDate reqDate;        // 요청, 저장일
     private LocalDate reReqDate;      // 재요청일
-    private LocalDate draftDate;      // 임시저장일
     private String senderName;        // 엔티티에 없는 부분 sql로 작업할 것 - 걸재문서를 보낸 사람
     private String category;          // 양식 종류
 }

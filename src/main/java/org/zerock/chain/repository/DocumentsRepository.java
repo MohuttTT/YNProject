@@ -17,7 +17,7 @@ public interface DocumentsRepository extends JpaRepository<Documents, Integer> {
     @Query("SELECT d FROM Documents d WHERE d.receiverEmpNo = :receiverEmpNo")
     List<Documents> findReceivedDocuments(@Param("receiverEmpNo") Integer receiverEmpNo);
 
-    @Query("SELECT d FROM Documents d WHERE d.docStatus = '임시저장'")
+    @Query("SELECT d FROM Documents d WHERE d.docStatus = '임시저장' ORDER BY d.docNo DESC")
     List<Documents> findDraftDocuments();
 
     @Query("SELECT d.category FROM Documents d WHERE d.docNo = :docNo")

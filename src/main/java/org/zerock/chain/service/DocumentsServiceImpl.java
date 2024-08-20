@@ -64,7 +64,15 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
         // 임시 문서 목록을 조회하여 DTO로 변환
         List<Documents> documents = documentsRepository.findDraftDocuments();
         return documents.stream()
-                .map(doc -> modelMapper.map(doc, DocumentsDTO.class))
+                .map(doc -> {
+                    DocumentsDTO dto = modelMapper.map(doc, DocumentsDTO.class);
+
+                    // senderName을 employees 테이블에서 조회하여 설정
+                    String senderName = employeesRepository.findFullNameByEmpNo(doc.getSenderEmpNo());
+                    dto.setSenderName(senderName);
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
