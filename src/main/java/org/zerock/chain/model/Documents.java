@@ -7,8 +7,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "documents")
-@Getter
-@Setter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -48,6 +47,12 @@ public class Documents {
 
     @Column(name = "approval_line", columnDefinition = "longtext")
     private String approvalLine;  // 결재선 Div 태그 HTML 부분
+
+    @Column(name = "time_stamp_html", columnDefinition = "longtext")
+    private String timeStampHtml;  // 타임스탬프 Div 태그 HTML 부분
+
+    @Column(name = "approver_no_html", columnDefinition = "longtext")
+    private String approverNoHtml;  // 결재자 순서 번호 Div 태그 HTML 부분
 
     @Column(name = "file_path")
     private String filePath;  // 파일 경로

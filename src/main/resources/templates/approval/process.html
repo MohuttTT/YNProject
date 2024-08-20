@@ -352,7 +352,9 @@
             cursor: pointer;
         }
 
-        .person-selection input[type="checkbox"] {
+        .person-selection input[type="checkbox"],  /*모달창의 체크박스 부분의 오른쪽 공간 늘리기*/
+        .approval-line input[type="checkbox"],
+        .reference-line input[type="checkbox"] {
             margin-right: 10px;
         }
 
@@ -567,7 +569,6 @@
         <h5 class="modal-title">출근</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-
 
       <div class="modal-body">
         <div id="currentTime">현재 시간:</div>
@@ -851,12 +852,12 @@
                     <div class="col-md-3">
                         <div class="left-box">
                             <ul id="departmentList">
-                                <li data-department="marketing">마케팅 부서</li>
-                                <li data-department="development">개발 부서</li>
-                                <li data-department="support">업무지원 부서</li>
-                                <li data-department="design">디자인 부서</li>
-                                <li data-department="planning">기획 부서</li>
-                                <li data-department="administration">행정 부서</li>
+                                <li data-department="마케팅">마케팅 부서</li>
+                                <li data-department="개발">개발 부서</li>
+                                <li data-department="업무지원">업무지원 부서</li>
+                                <li data-department="디자인">디자인 부서</li>
+                                <li data-department="기획">기획 부서</li>
+                                <li data-department="행정">행정 부서</li>
                             </ul>
                         </div>
                     </div>
@@ -918,6 +919,9 @@ document.addEventListener("DOMContentLoaded", function (e) {
     const formHtml = sessionStorage.getItem('formHtml');
     const category = sessionStorage.getItem('selectedCategory');
 
+    // 작성일을 현재 날짜로 설정
+    const today = new Date().toISOString().split('T')[0];
+
     if (formHtml) {
         // 왼쪽 컨테이너에 HTML을 삽입
         const approvalForm = document.querySelector('#approvalForm');
@@ -936,64 +940,33 @@ document.addEventListener("DOMContentLoaded", function (e) {
         console.error('세션 스토리지에서 formHtml을 가져오지 못했습니다.');
     }
 
-    const employees = {   // 조직도에 해당하는 부분 임시로 만들기, 나중에 DB에 값들 끌어오는 것으로 변경할 것
-        marketing: [
-            {name: "박성호", position: "부장", department: "마케팅 부서"},
-            {name: "김동현", position: "과장", department: "마케팅 부서"},
-            {name: "한동민", position: "대리", department: "마케팅 부서"},
-            {name: "이상혁", position: "사원", department: "마케팅 부서"},
-            {name: "이지영", position: "사원", department: "마케팅 부서"}
-        ],
-        development: [
-            {name: "최영민", position: "부장", department: "개발 부서"},
-            {name: "신혜리", position: "과장", department: "개발 부서"},
-            {name: "류이슬", position: "대리", department: "개발 부서"},
-            {name: "김선혜", position: "대리", department: "개발 부서"},
-            {name: "류현진", position: "사원", department: "개발 부서"},
-            {name: "정예진", position: "사원", department: "개발 부서"},
-            {name: "한바다", position: "사원", department: "개발 부서"},
-            {name: "김서아", position: "사원", department: "개발 부서"}
+    // allEmployees 배열로 만들기
+    let allEmployees = [];
 
-        ],
-        support: [
-            {name: "김희재", position: "부장", department: "업무지원 부서"},
-            {name: "박철수", position: "과장", department: "업무지원 부서"},
-            {name: "김민재", position: "대리", department: "업무지원 부서"},
-            {name: "김민영", position: "대리", department: "업무지원 부서"},
-            {name: "이나리", position: "사원", department: "업무지원 부서"}
-        ],
-        design: [
-            {name: "박성은", position: "부장", department: "디자인 부서"},
-            {name: "김예준", position: "과장", department: "디자인 부서"},
-            {name: "한노아", position: "대리", department: "디자인 부서"},
-            {name: "채봉구", position: "대리", department: "디자인 부서"},
-            {name: "도은호", position: "사원", department: "디자인 부서"},
-            {name: "유하민", position: "사원", department: "디자인 부서"}
-        ],
-        planning: [
-            {name: "강인권", position: "부장", department: "기획 부서"},
-            {name: "손아섭", position: "과장", department: "기획 부서"},
-            {name: "박건우", position: "대리", department: "기획 부서"},
-            {name: "박민우", position: "대리", department: "기획 부서"},
-            {name: "김형준", position: "사원", department: "기획 부서"},
-            {name: "박한결", position: "사원", department: "기획 부서"},
-            {name: "김휘집", position: "사원", department: "기획 부서"}
-        ],
-        administration: [
-            {name: "임종하", position: "부장", department: "행정 부서"},
-            {name: "서경우", position: "과장", department: "행정 부서"},
-            {name: "임원택", position: "대리", department: "행정 부서"},
-            {name: "송영지", position: "사원", department: "행정 부서"}
-        ]
-    };
+    // 서버에서 모든 직원 정보를 가져옴
+    fetch('/approval/getAllEmployees')
+        .then(response => response.json())
+        .then(data => {
+            allEmployees = data.employees;  // 모든 직원 정보를 저장
+            const loggedInUser = data.loggedInUser;  // 로그인한 사용자 정보
 
-    departmentList.addEventListener('click', function (event) {
-        const department = event.target.dataset.department;
+            // 로그인한 사용자의 정보로 부서, 직급, 이름 설정
+            document.getElementById('dmpName').textContent = loggedInUser.dmpName;
+            document.getElementById('senderName').textContent = `${loggedInUser.lastName}${loggedInUser.firstName}`;
+            document.getElementById('rankName').textContent = loggedInUser.rankName;
+            document.getElementById('reqDate').textContent = today;
 
-        if (department && employees[department]) {
-            updatePersonSelection(employees[department]);
-        }
-    });
+            // 부서명을 클릭했을 때 해당 부서의 직원 목록을 업데이트
+            departmentList.addEventListener('click', function (e) {
+                const department = e.target.dataset.department;  // "마케팅" -> "마케팅"
+
+                if (department) {
+                    const filteredEmployees = allEmployees.filter(employee => employee.dmpName === department);
+                    updatePersonSelection(filteredEmployees);
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching employee data:', error));
 
     // 모달창에 체크박스 처리부분
     function updatePersonSelection(employeeList) {
@@ -1005,14 +978,14 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.value = `${employee.name} - ${employee.position} (${employee.department})`;
+            checkbox.value = ` ${employee.lastName}${employee.firstName} - ${employee.rankName} (${employee.dmpName})`;
 
             const icon = document.createElement('i');
             icon.className = 'bi bi-person-circle';
 
             listItem.appendChild(checkbox);
             listItem.appendChild(icon);
-            listItem.appendChild(document.createTextNode(` ${employee.name} ${employee.position} (${employee.department})`));
+            listItem.appendChild(document.createTextNode(` ${employee.lastName}${employee.firstName} ${employee.rankName} (${employee.dmpName})`));
 
             personSelection.appendChild(listItem);
         });
@@ -1024,6 +997,8 @@ document.addEventListener("DOMContentLoaded", function (e) {
         const docTitle = document.querySelector('input[name="docTitle"]').value;
         const docBody = document.querySelector('textarea[name="docBody"]').value;
         const approvalLineHtml = document.querySelector('#approverContainer').innerHTML; // 결재선만 저장
+        const timeStampHtml = document.querySelector('#timeStamp').innerHTML;
+        const approverContainerNumbersHtml = document.querySelector('#approverContainerNumbers').innerHTML;
 
         // 파일 입력 필드가 있을 경우
         const fileInput = document.querySelector('input[name="file"]');
@@ -1033,6 +1008,8 @@ document.addEventListener("DOMContentLoaded", function (e) {
         formData.append('docTitle', docTitle);
         formData.append('docBody', docBody);
         formData.append('approvalLine', approvalLineHtml);
+        formData.append('timeStampHtml', timeStampHtml);
+        formData.append('approverNoHtml', approverContainerNumbersHtml);
         formData.append('category', category);  // 카테고리 정보
         formData.append('docStatus', '요청');  // 문서 상태
         if (file) {

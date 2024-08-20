@@ -24,6 +24,7 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     private final DocumentsRepository documentsRepository;
     private final EmployeesRepository employeesRepository;
     private final ModelMapper modelMapper;
+    private final FileService fileService; // 파일 저장 서비스를 주입
 
     @Override
     public DocumentsDTO getDocumentById(int docNo) {
@@ -70,6 +71,13 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
     @Override
     public int saveDocument(DocumentsDTO documentsDTO) {
         try {
+            // 파일이 있는 경우 파일 저장 처리
+            String filePath = null;
+            if (documentsDTO.getFile() != null && !documentsDTO.getFile().isEmpty()) {
+                filePath = fileService.saveFile(documentsDTO.getFile());  // 파일을 저장하고 경로를 반환
+                documentsDTO.setFilePath(filePath);  // DTO에 파일 경로 설정
+            }
+
             // Documents 엔티티를 먼저 생성하고 저장
             Documents documents = Documents.builder()
                     .reqDate(LocalDate.now())
@@ -78,9 +86,11 @@ public class DocumentsServiceImpl implements DocumentsService<DocumentsDTO> {
                     .docStatus(documentsDTO.getDocStatus())  // 요청된 상태를 사용
                     .category(documentsDTO.getCategory())    // 클라이언트가 보낸 카테고리 설정
                     .docTitle(documentsDTO.getDocTitle())    // 문서 제목을 설정
-                    .docBody(documentsDTO.getDocBody())
-                    .approvalLine(documentsDTO.getApprovalLine())
-                    .filePath(documentsDTO.getFilePath())
+                    .docBody(documentsDTO.getDocBody())      // 내용 입력값을 저장
+                    .approvalLine(documentsDTO.getApprovalLine())     // 결재자 정보를 저장
+                    .timeStampHtml(documentsDTO.getTimeStampHtml())   // 타임스탬프를 저장
+                    .approverNoHtml(documentsDTO.getApproverNoHtml()) // 결재자 순번을 저장
+                    .filePath(filePath) // 저장된 파일 경로 설정
                     .build();
 
             Documents savedDocument = documentsRepository.save(documents);

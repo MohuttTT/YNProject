@@ -595,7 +595,7 @@
 <!-- 여기서부터 메인에서 추가한 부분입니다! -->
 <main id="main" class="main">
     <div class="pagetitle">
-        <h1>전자결재 요청</h1>
+        <h1>전자결재 보낸 문서</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -651,6 +651,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     // URL에서 'category' 파라미터의 값을 가져옴
     const category = getQueryParam('category');
+    // URL 경로에서 docNo 경로변수를 가져옴
+    const docNo = window.location.pathname.split('/').pop();
 
     fetch(`/approval/getForm/${category}`)
         .then(response => {
@@ -665,17 +667,70 @@ document.addEventListener("DOMContentLoaded", function () {
                 const container = document.getElementById('container');
                 container.innerHTML = data.formHtml;
 
-                // 모든 입력 필드를 읽기 전용으로 설정
-                const inputs = container.querySelectorAll('input, textarea, select');
-                inputs.forEach(input => {
-                    input.setAttribute('readonly', true);
-                    input.setAttribute('disabled', true);  // select 등의 필드를 위한 처리
-                });
+                // 서버에서 문서 데이터를 가져옴
+                return fetch(`/approval/getDocumentData/${docNo}`);
             } else {
                 console.error('Form HTML is missing');
             }
         })
-        .catch(error => console.error('Error fetching form:', error));
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                const documentData = data.document;
+                const loggedInUser = data.loggedInUser;
+
+                // 데이터를 HTML 폼에 삽입
+                document.querySelector('input[name="docTitle"]').value = documentData.docTitle;
+                document.querySelector('textarea[name="docBody"]').value = documentData.docBody;
+
+                // 문서 상태와 작성일을 설정
+                document.getElementById('docStatus').textContent = documentData.docStatus || '';
+                document.getElementById('reqDate').textContent = documentData.reqDate || '';
+
+                // 결재선 결재자 이름 추가
+                const approvalContainer = document.getElementById('approverContainer');
+                approvalContainer.innerHTML = documentData.approvalLine;
+                // 결재선 timeStamp를 추가
+                const timeStamp = document.getElementById('timeStamp');
+                timeStamp.innerHTML = documentData.timeStampHtml;
+                // 결재선 순번 추가
+                const approverNo = document.getElementById('approverContainerNumbers');
+                approverNo.innerHTML = documentData.approverNoHtml;
+
+                // 로그인된 사용자의 정보를 폼에 삽입
+                document.getElementById('dmpName').textContent = loggedInUser.dmpName || '';
+                document.getElementById('senderName').textContent = `${loggedInUser.lastName}${loggedInUser.firstName}` || '';
+                document.getElementById('rankName').textContent = loggedInUser.rankName || '';
+
+                // 파일 경로가 있을 경우, 파일 링크를 추가
+                if (documentData.filePath) {
+                    const fileInput = document.getElementById('file');
+                    const fullPath = documentData.filePath;
+
+                    // 경로에서 파일 이름만 추출
+                    const fileName = fullPath.split('_').pop(); // 파일명 추출 (고유 ID 뒤에 있는 부분)
+
+                    const fileLink = document.createElement('span');
+                    fileLink.textContent = fileName;
+                    fileLink.style.marginLeft = '10px'; // 링크와 기존 input 간의 간격 추가
+
+                    // 파일 선택 필드의 부모 요소에 파일 링크를 추가
+                    fileInput.parentNode.appendChild(fileLink);
+
+                    // 파일 선택 필드를 숨김 (disabled만으로는 충분하지 않을 수 있음)
+                    fileInput.style.display = 'none';
+                }
+
+                // 모든 입력 필드를 읽기 전용으로 설정
+                const inputs = document.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    input.setAttribute('disabled', true);  // select 등의 필드를 위한 처리
+                });
+            } else {
+                console.error('Document or User data is missing');
+            }
+        })
+        .catch(error => console.error('Error fetching form or document data:', error));
 });
 
 backBtn.addEventListener('click', (e) => {

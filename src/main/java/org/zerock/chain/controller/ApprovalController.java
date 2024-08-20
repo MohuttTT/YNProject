@@ -13,7 +13,9 @@ import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
 import org.zerock.chain.model.Form;
 import org.zerock.chain.service.DocumentsService;
+import org.zerock.chain.service.FileService;
 import org.zerock.chain.service.FormService;
+import org.zerock.chain.service.UserService;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -28,14 +30,15 @@ public class ApprovalController {
 
     private final DocumentsService documentsService;
     private final FormService formService;  // FormService 주입
+    private final UserService userService;
 
     @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    public ApprovalController(DocumentsService documentsService, FormService formService) {
+    public ApprovalController(DocumentsService documentsService,
+                              FormService formService,
+                              UserService userService) {
         this.documentsService = documentsService;
         this.formService = formService;
+        this.userService = userService;
     }
 
     @GetMapping("/main")                                         // 보낸 문서함 페이지로 이동
@@ -130,14 +133,16 @@ public class ApprovalController {
 
     @GetMapping("/read/{docNo}")
     public String readDocument(@PathVariable("docNo") int docNo,
-                               @RequestParam("category") String category,
                                Model model) {
+        // 임시로 emp_no가 1인 사용자의 정보 가져오기
+        EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
         // 문서 번호로 문서 조회
         DocumentsDTO document = documentsService.getDocumentById(docNo);
 
+        // 모델에 사용자 정보를 추가
+        model.addAttribute("loggedInUser", loggedInUser);
         // 모델에 문서 데이터를 추가
         model.addAttribute("document", document);
-        model.addAttribute("category", category);
 
         // 'read.html' 뷰를 반환
         return "/approval/read";
@@ -155,5 +160,43 @@ public class ApprovalController {
             log.error("Form not found for category: {}", category);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @GetMapping("/getDocumentData/{docNo}")
+    public ResponseEntity<Map<String, Object>> getDocumentData(@PathVariable("docNo") int docNo) {
+        // 문서 정보 조회
+        DocumentsDTO document = documentsService.getDocumentById(docNo);
+
+        // 임시로 emp_no가 1인 사용자의 정보 가져오기
+        EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
+
+        // 반환할 데이터를 맵에 추가
+        Map<String, Object> response = new HashMap<>();
+        response.put("document", document);
+        response.put("loggedInUser", loggedInUser);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getAllEmployees")
+    public ResponseEntity<Map<String, Object>> getAllEmployees() {
+        List<EmployeeDTO> employees = userService.getAllEmployees();
+        // 원래는 로그인한 사용자의 정보를 가져오는건데 임시로 emp_no가 1인 사용자 정보를 가져옴
+        EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
+
+        // 반환할 데이터를 맵에 추가
+        Map<String, Object> response = new HashMap<>();
+        response.put("employees", employees);
+        response.put("loggedInUser", loggedInUser);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getEmployees")
+    public ResponseEntity<EmployeeDTO> getLoggedInUserDetails() {
+        // 임시로 emp_no가 1인 사용자를 가져옴
+        EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
+
+        return ResponseEntity.ok(loggedInUser);
     }
 }

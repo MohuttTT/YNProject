@@ -45,4 +45,12 @@ public class Employee {
 
     @Column(name = "addr")
     private String addr;
+
+    @ManyToOne
+    @JoinColumn(name = "dmp_no")
+    private Department department;
+
+    @ManyToOne
+    @JoinColumn(name = "rank_no")
+    private EmpRank empRank;
 }
