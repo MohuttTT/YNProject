@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.chain.model.Documents;
 import org.zerock.chain.dto.*;
@@ -131,6 +132,23 @@ public class ApprovalController {
         }
     }
 
+    @GetMapping("/draftRead/{docNo}")
+    public String draftReadDocument(@PathVariable("docNo") int docNo,
+                               Model model) {
+        // 임시로 emp_no가 1인 사용자의 정보 가져오기
+        EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
+        // 문서 번호로 문서 조회
+        DocumentsDTO document = documentsService.getDocumentById(docNo);
+
+        // 모델에 사용자 정보를 추가
+        model.addAttribute("loggedInUser", loggedInUser);
+        // 모델에 문서 데이터를 추가
+        model.addAttribute("document", document);
+
+        // 'draftRead.html' 뷰를 반환
+        return "/approval/draftRead";
+    }
+
     @GetMapping("/read/{docNo}")
     public String readDocument(@PathVariable("docNo") int docNo,
                                Model model) {
@@ -198,5 +216,25 @@ public class ApprovalController {
         EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
 
         return ResponseEntity.ok(loggedInUser);
+    }
+
+    @PostMapping("/update-document")
+    public ResponseEntity<String> updateDocument(@ModelAttribute DocumentsDTO documentsDTO) {
+        try {
+            documentsService.updateDocument(documentsDTO);
+            return ResponseEntity.ok("Document updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update document");
+        }
+    }
+
+    @DeleteMapping("/delete-document/{docNo}")
+    public ResponseEntity<String> deleteDocument(@PathVariable int docNo) {
+        try {
+            documentsService.deleteDocument(docNo);
+            return ResponseEntity.ok("Document deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete document");
+        }
     }
 }

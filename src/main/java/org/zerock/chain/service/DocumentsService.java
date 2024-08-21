@@ -13,5 +13,10 @@ public interface DocumentsService <T extends DocumentsDTO> {
 
     // 사용자가 문서에 입력한 모든 정보를 반환하는 메소드 추가
     int saveDocument(DocumentsDTO documentsDTO);
+    // 사용자가 임시저장한 문서에서 정보를 업데이트하는 메소드 추가
+    void updateDocument(DocumentsDTO documentsDTO) throws Exception;
+    // 사용자가 임시저장한 문서 삭제하는 메소드 추가
+    void deleteDocument(int docNo) throws Exception;
+
     T getDocumentById(int docNo);
 }

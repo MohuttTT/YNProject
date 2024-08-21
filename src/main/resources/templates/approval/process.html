@@ -839,7 +839,7 @@
     </div>
 </footer><!-- 푸터 부분 끝 -->
 
-<!-- 모달 창 -->
+<!-- 결재선 모달 창 -->
 <div class="modal fade" id="ExtralargeModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -967,29 +967,6 @@ document.addEventListener("DOMContentLoaded", function (e) {
         })
         .catch(error => console.error('Error fetching employee data:', error));
 
-    // 모달창에 체크박스 처리부분
-    function updatePersonSelection(employeeList) {
-        personSelection.innerHTML = ''; // 기존 내용을 지웁니다.
-
-        employeeList.forEach(employee => {
-            const listItem = document.createElement('li');
-            listItem.className = 'd-block';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = ` ${employee.lastName}${employee.firstName} - ${employee.rankName} (${employee.dmpName})`;
-
-            const icon = document.createElement('i');
-            icon.className = 'bi bi-person-circle';
-
-            listItem.appendChild(checkbox);
-            listItem.appendChild(icon);
-            listItem.appendChild(document.createTextNode(` ${employee.lastName}${employee.firstName} ${employee.rankName} (${employee.dmpName})`));
-
-            personSelection.appendChild(listItem);
-        });
-    }
-
     // 결재 요청 버튼 눌렀을 때
     document.getElementById('approvalForm').addEventListener('submit', function (e) {
         e.preventDefault();  // 기본 폼 제출을 막고, AJAX 요청을 사용
@@ -1110,6 +1087,30 @@ document.addEventListener("DOMContentLoaded", function (e) {
     document.getElementById('button4').addEventListener('click', function () {
         removeSelectedItems('referenceLineModal');
     });
+
+    // 여기서부터 결재선 모달창 함수 부분
+    // 결재선 모달창에 체크박스 처리부분
+    function updatePersonSelection(employeeList) {
+        personSelection.innerHTML = ''; // 기존 내용을 지웁니다.
+
+        employeeList.forEach(employee => {
+            const listItem = document.createElement('li');
+            listItem.className = 'd-block';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = ` ${employee.lastName}${employee.firstName} - ${employee.rankName} (${employee.dmpName})`;
+
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-person-circle';
+
+            listItem.appendChild(checkbox);
+            listItem.appendChild(icon);
+            listItem.appendChild(document.createTextNode(` ${employee.lastName}${employee.firstName} ${employee.rankName} (${employee.dmpName})`));
+
+            personSelection.appendChild(listItem);
+        });
+    }
 
     function moveSelectedItems(targetId) {
         const target = document.getElementById(targetId).querySelector('ul');

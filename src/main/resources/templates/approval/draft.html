@@ -464,7 +464,7 @@
               <tr th:each="document : ${draftDocuments}">
                 <td th:text="${document.docNo}"></td>
                 <td>
-                  <a th:href="@{/approval/read/{docNo}(docNo=${document.docNo}, category=${document.category})}"
+                  <a th:href="@{/approval/draftRead/{docNo}(docNo=${document.docNo}, category=${document.category})}"
                      th:text="${document.docTitle}"></a>
                 </td>
                 <td th:text="${document.senderName}"></td>
