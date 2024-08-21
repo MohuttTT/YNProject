@@ -10,9 +10,6 @@ import org.zerock.chain.dto.FavoriteQnaDTO;
 import org.zerock.chain.dto.FavoriteQnaRequestDTO;
 import org.zerock.chain.dto.QnaDTO;
 import org.zerock.chain.dto.QnaRequestDTO;
-import org.zerock.chain.service.CommentService;
-import org.zerock.chain.service.FavoriteQnaService;
-import org.zerock.chain.service.QnaService;
 
 import java.util.List;
 
