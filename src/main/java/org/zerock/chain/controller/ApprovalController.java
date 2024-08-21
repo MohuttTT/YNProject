@@ -135,7 +135,7 @@ public class ApprovalController {
     @GetMapping("/draftRead/{docNo}")
     public String draftReadDocument(@PathVariable("docNo") int docNo,
                                Model model) {
-        // 임시로 emp_no가 1인 사용자의 정보 가져오기
+        // 원래는 로그인한 사용자의 정보를 가져오는건데 임시로 emp_no가 1인 사용자 정보를 가져옴
         EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
         // 문서 번호로 문서 조회
         DocumentsDTO document = documentsService.getDocumentById(docNo);
@@ -185,7 +185,7 @@ public class ApprovalController {
         // 문서 정보 조회
         DocumentsDTO document = documentsService.getDocumentById(docNo);
 
-        // 임시로 emp_no가 1인 사용자의 정보 가져오기
+        // 원래는 로그인한 사용자의 정보를 가져오는건데 임시로 emp_no가 1인 사용자 정보를 가져옴
         EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
 
         // 반환할 데이터를 맵에 추가
@@ -212,7 +212,7 @@ public class ApprovalController {
 
     @GetMapping("/getEmployees")
     public ResponseEntity<EmployeeDTO> getLoggedInUserDetails() {
-        // 임시로 emp_no가 1인 사용자를 가져옴
+        // 원래는 로그인한 사용자의 정보를 가져오는건데 임시로 emp_no가 1인 사용자 정보를 가져옴
         EmployeeDTO loggedInUser = userService.getLoggedInUserDetails();
 
         return ResponseEntity.ok(loggedInUser);

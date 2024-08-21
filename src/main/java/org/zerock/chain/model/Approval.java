@@ -18,7 +18,7 @@ public class Approval {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "approval_no")
-    private Integer approvalNo;  // 결재번호
+    private Long approvalNo;  // 결재번호
 
     @ManyToOne
     @JoinColumn(name = "doc_no", referencedColumnName = "doc_no")
