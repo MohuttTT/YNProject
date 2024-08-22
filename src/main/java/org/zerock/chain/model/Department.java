@@ -1,10 +1,7 @@
 package org.zerock.chain.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "department")
@@ -13,11 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Department {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dmp_no")
     private Long dmpNo;
 
-    @Column(name = "dmp_name")
+    @Column(name = "dmp_name", nullable = false, length = 100)
     private String dmpName;
 }
